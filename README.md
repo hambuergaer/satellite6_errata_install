@@ -10,3 +10,5 @@ If you don`t pass the option "--update-host" you will only see a summary of appl
 
 If you pass the option "--write-log" a log file will be written in ".errata_update_logs".
 
+# Prerequisites
+This script should be run on a host with hammer cli installed.
