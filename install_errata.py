@@ -79,6 +79,19 @@ def verify_lifecycle(lifecycle_environment):
 	except:
 		print log.ERROR + "ERROR: did not find lifecycle environment " + lifecycle_environment + log.END
 
+def get_trange(hostname):
+	cmd_get_trange = hammer_cmd + " --csv host info --name " + hostname
+	try:
+		perform_cmd = subprocess.Popen(cmd_get_trange, shell=True, stdout=subprocess.PIPE)
+		hostinfo = perform_cmd.stdout.read()
+		for line in islice(hostinfo.strip().split("\n"), 1, None):	# print output without CSV header
+			if TRANGE in line:	
+				return True
+				break
+
+	except:
+		print log.ERROR + "ERROR: your host seems not to be attached to trange " + TRANGE + log.END
+
 def get_list_of_hosts_in_lifecycle_environment(lifecycle_environment):
 	list_of_hosts = []
 	cmd_get_list_of_hosts_in_lifecycle_environment = hammer_cmd + " --csv content-host list --lifecycle-environment "+ lifecycle_environment +" --organization " + ORGANIZATION
@@ -132,6 +145,7 @@ parser.add_option("--write-log", dest="write_log", action="store_true", help="Wr
 #parser.add_option("--update-security-errata", dest="update_security_errata", action="store_true", help="Update security errata only")
 #parser.add_option("--update-bugfix-errata", dest="update_bugfix_errata", action="store_true", help="Update bugfix errata only")
 parser.add_option("--update-enhancement-errata", dest="update_enhancement_errata", action="store_true", help="Update enhancement errata only")
+parser.add_option("--trange", dest="trange", help="Trange where you want to add your host [tr01 / tr02] ", metavar="TRANGE")
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true", help="Verbose output")
 (options, args) = parser.parse_args()
 
@@ -141,6 +155,11 @@ if not ( options.sat6_fqdn and options.lifecycle_environment and options.organiz
     print '\nExample usage: ./install_errata.py --satellite-server <your-satellite-server> --lifecycle-environment <dev/test/preprod/prod> --organization <your-organization> [--update-host] [--list-errata-per-host]'
     sys.exit(1)
 else:
+    if options.trange == "tr01" or options.trange == "tr02" :
+	TRANGE=options.trange
+    else:
+	print log.ERROR + "ERROR: you need to define the trange where you want to assign your host. See usage." + log.END
+	sys.exit(1)
     SAT6_FQDN = options.sat6_fqdn
     ORGANIZATION  = str(options.organization)
     LIFECYCLE_ENVIRONMENT = str(options.lifecycle_environment)
@@ -193,14 +212,15 @@ if verify_organization(ORGANIZATION) and verify_lifecycle(LIFECYCLE_ENVIRONMENT)
 		
 	print log.INFO + "Theses are the hosts assigned to lifecycle environment " + log.SUMM + LIFECYCLE_ENVIRONMENT + log.INFO + " with their applicable errata:" + log.END + "\n"
 	for host in get_list_of_hosts_in_lifecycle_environment(LIFECYCLE_ENVIRONMENT):
-		print log.SUMM + "===> " + host.split(",")[1] + " <=== " + log.END
-		print log.INFO + "Hostname : " + log.END + host.split(",")[1] + log.INFO + " Applicable errata: " + log.END + host.split(",")[2]
-		for errata in get_list_of_applicable_errata(host.split(",")[1]):
-			print log.INFO + "Errata ID: " + log.END + errata.split(",")[0] + log.INFO + " Errata Name: " + log.END + errata.split(",")[1] + log.INFO + " Errata Type: " + log.END + errata.split(",")[2] + log.INFO + " \t Description: " + log.END + errata.split(",")[3]
-		if UPDATE_HOST and int(host.split(",")[2]) != 0:
-			print log.INFO + "==> Start errata update now." + log.END
-			update_errata_on_host(host.split(",")[1])
-		print "\n"
+		if get_trange(host.split(",")[1]):
+			print log.SUMM + "===> " + host.split(",")[1] + " <=== " + log.END
+			print log.INFO + "Hostname : " + log.END + host.split(",")[1] + log.INFO + " Applicable errata: " + log.END + host.split(",")[2]
+			for errata in get_list_of_applicable_errata(host.split(",")[1]):
+				print log.INFO + "Errata ID: " + log.END + errata.split(",")[0] + log.INFO + " Errata Name: " + log.END + errata.split(",")[1] + log.INFO + " Errata Type: " + log.END + errata.split(",")[2] + log.INFO + " \t Description: " + log.END + errata.split(",")[3]
+			if UPDATE_HOST and int(host.split(",")[2]) != 0:
+				print log.INFO + "==> Start errata update now." + log.END
+				update_errata_on_host(host.split(",")[1])
+			print "\n"
 
 # Close log file
 sys.stdout.close()
