@@ -41,6 +41,10 @@ from itertools import islice
 
 current_date = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
+# Put a host to this list if applicable errata are present. Aftrewards an Ansible hostfile will be created.
+# This can be used to reboot hosts after the Errata update is finished
+update_host_via_ansible = []
+
 # Logging class with different colors per type
 class log:
 	HEADER	= '\033[0;36m'
@@ -133,6 +137,18 @@ def update_errata_on_host(hostname):
 	except:
 		print log.ERROR + "ERROR: was not able to update errata on host "  + hostname + log.END
 
+def write_hosts_to_ansible_file():
+	ansible_folder = os.environ['HOME']+"/ansible/"
+	if not os.path.exists(ansible_folder):
+        	os.makedirs(ansible_folder)
+	filename = os.environ['HOME']+"/ansible/"+LIFECYCLE_ENVIRONMENT+"-"+TRANGE
+	print filename
+	with open(filename, 'a') as file:
+		for line in update_host_via_ansible:
+			print line
+			file.write(line)
+
+
 ################################## OPTIONS PARSER AND VARIABLES ##################################
 
 parser = OptionParser()
@@ -220,7 +236,10 @@ if verify_organization(ORGANIZATION) and verify_lifecycle(LIFECYCLE_ENVIRONMENT)
 			if UPDATE_HOST and int(host.split(",")[2]) != 0:
 				print log.INFO + "==> Start errata update now." + log.END
 				update_errata_on_host(host.split(",")[1])
+				update_host_via_ansible.append(host.split(",")[1])
+				write_hosts_to_ansible_file()
 			print "\n"
+	
 
 # Close log file
 sys.stdout.close()
