@@ -40,7 +40,7 @@ from optparse import OptionParser
 from itertools import islice
 
 current_date = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-hammer_cmd = "/usr/bin/hammer"
+hammer_cmd = str("/usr/bin/hammer --server " + SAT6_FQDN)
 
 # Logging class with different colors per type
 class log:
