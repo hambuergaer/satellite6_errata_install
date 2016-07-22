@@ -12,3 +12,6 @@ If you pass the option "--write-log" a log file will be written in ".errata_upda
 
 # Prerequisites
 This script should be run on a host with hammer cli installed.
+```
+yum install -y rubygem-hammer_cli_csv rubygem-hammer_cli_foreman_bootdisk rubygem-hammer_cli_gutterball rubygem-hammer_cli_foreman_tasks rubygem-hammer_cli_katello rubygem-hammer_cli_foreman rubygem-hammer_cli
+```
