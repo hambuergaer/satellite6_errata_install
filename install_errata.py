@@ -40,7 +40,6 @@ from optparse import OptionParser
 from itertools import islice
 
 current_date = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-hammer_cmd = str("/usr/bin/hammer --server " + SAT6_FQDN)
 
 # Logging class with different colors per type
 class log:
@@ -163,6 +162,7 @@ else:
     SAT6_FQDN = options.sat6_fqdn
     ORGANIZATION  = str(options.organization)
     LIFECYCLE_ENVIRONMENT = str(options.lifecycle_environment)
+    hammer_cmd = str("/usr/bin/hammer --server " + SAT6_FQDN)
 
 if options.verbose:
     VERBOSE=True
