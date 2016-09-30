@@ -178,7 +178,7 @@ else:
     SAT6_FQDN = options.sat6_fqdn
     ORGANIZATION  = str(options.organization)
     LIFECYCLE_ENVIRONMENT = str(options.lifecycle_environment)
-    hammer_cmd = str("/usr/bin/hammer --server " + SAT6_FQDN)
+    hammer_cmd = str("/usr/bin/hammer ")
 
 if options.verbose:
     VERBOSE=True
